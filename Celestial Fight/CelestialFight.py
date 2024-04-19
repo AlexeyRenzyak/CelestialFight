@@ -1,6 +1,7 @@
 import pygame
 import menu
 import player
+import projectiles
 
 pygame.init()
 
@@ -15,7 +16,10 @@ end = False
 
 in_menu = True
 
-Ship = player.Player(0.1, 1, 5)
+Ship = player.Player(0.1, 1, 1.005, 10)
+reloading_time = Ship.rof
+
+Bullets = pygame.sprite.Group()
 
 while not end:
     for event in pygame.event.get():
@@ -53,8 +57,21 @@ while not end:
             menu.MainMenu.blit(button, r)
     else:
         screen.fill((50,50,50))
+        if reloading_time < Ship.rof:
+            reloading_time += 1
         Ship.process()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE]:
+            if reloading_time == Ship.rof:
+                Bullets.add(projectiles.PlayerBullet(Ship.rect.center, 15, Ship.rotation, 300))
+                reloading_time = 0
+        for x in Bullets:
+            x.process()
+            screen.blit(x.image, x.rect)
+            if x.timer >= x.lifetime:
+                Bullets.remove(x)
         screen.blit(Ship.image, Ship.rect)
+        
         
     pygame.display.flip()
     clock.tick(FPS)
